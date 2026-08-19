@@ -2,7 +2,7 @@
 
 Course: **Basic of AI Programming Skills (DSC 311)**
 Project Domain: **Student Academic Advisor**
-Architecture Version: **3.2**
+Architecture Version: **3.3**
 Status: **Approved**
 Approval Date: **2026-08-19**
 
@@ -93,13 +93,24 @@ External AI output is never adopted automatically.
   student's five raw values.
 - Keep Part B on separately prepared raw features rather than Part A membership
   degrees.
+- Adopt `docs/part-a/RULE_BASE_AND_DEPENDENCY_DESIGN.md` version 1.1 as the
+  Rule Base and dependency-design Source of Truth.
+- Use the approved compact but non-trivial six-rule network, R1 through R6, in
+  Knowledge Base declaration order.
+- Use the three structurally Intermediate Conclusions and three structurally
+  Final Conclusions defined in the approved Rule Base design.
+- Use the approved author-assigned CF values and semantic rationales recorded in
+  the Rule Base design.
+- Interpret every Final Conclusion as a degree of academic-support need reached
+  through a distinct evidence pathway, so Maximum and Union aggregate values in
+  one coherent semantic direction.
 
 ### 3.3 Optional or Deferred Enhancements
 
 The following are not part of the required initial implementation:
 
-- Additional fuzzy predicates beyond the five approved initial facts unless later
-  justified during rule-base design.
+- Additional fuzzy predicates beyond the five approved initial facts. Any future
+  addition requires a separately reviewed versioned design change.
 - Automatic membership-function generation or tuning.
 - Programmatic Inference Network Diagram generation.
 - GUI.
@@ -126,6 +137,25 @@ IF condition THEN conclusion
 ```
 
 The stored rule fields are separated. The `condition` field does not contain the `IF` or `THEN` keywords.
+
+The approved rule content, conclusion vocabulary, CF values, dependency edges,
+and declaration order are defined in:
+
+```text
+docs/part-a/RULE_BASE_AND_DEPENDENCY_DESIGN.md
+```
+
+The adopted design contains six rules, R1 through R6. Its structurally derived
+conclusion classes are:
+
+- Intermediate: `engagement_concern`, `persistent_low_performance`, and
+  `core_academic_risk`.
+- Final: `attendance_based_support_need`,
+  `emerging_performance_support_need`, and
+  `compounded_academic_support_need`.
+
+The Rule Base design document is the Source of Truth for the exact conditions,
+descriptions, CF values, and dependency graph; they are not duplicated here.
 
 ### 4.2 O-A-V Facts
 
@@ -720,14 +750,8 @@ decisions are approved.
 
 The following remain open:
 
-- Whether any deferred context fields such as `schoolsup`, `famsup`, `higher`, or
-  `internet` are justified in a specific Production Rule.
-- Whether a separately justified grade-trend fact is needed.
-- Rule Base content.
-- Number of Production Rules.
-- Intermediate and Final Conclusion names.
-- CF values and their justification.
-- Final academic recommendations.
+- Final human-readable output wording that presents the three approved
+  academic-support conclusions to the user without changing their rule semantics.
 - Scaling method for the five K-Means inputs.
 - Outlier transformation, if any.
 - Candidate and final values of K.
@@ -737,8 +761,9 @@ The following remain open:
 - Manual or programmatic production of the required Inference Network Diagram.
 
 The dataset, source, primary file, five shared features, five initial fuzzy facts,
-membership functions, raw-to-fuzzy adoption, missing-value result, and initial
-encoding decision are approved and are no longer open.
+membership functions, raw-to-fuzzy adoption, missing-value result, initial
+encoding decision, six-rule content, conclusion vocabulary, dependency graph, and
+CF values are approved and are no longer open.
 
 ## 22. Rejected Architecture Choices
 
@@ -767,11 +792,12 @@ The following must not be reintroduced without an approved architecture change:
 
 ## 23. Approval
 
-Architecture v3.2 is approved as the implementation baseline.
+Architecture v3.3 is approved as the implementation baseline.
 
-Version 3.2 adopts the validated raw-input and fuzzification boundary, synchronizes
-the approved UCI dataset and five-feature scope, and leaves every other v3.1
-inference, rule, dependency, trace, aggregation, diagram, and separation decision
+Version 3.3 adopts the approved Rule Base and Dependency Design v1.1, closes the
+previously open decisions for rule content, rule count, derived-conclusion names,
+dependency structure, and author-assigned CF values, and leaves the v3.2 runtime,
+fuzzification, inference, trace, aggregation, Part B, and separation decisions
 unchanged.
 
 No project code has been written at this stage.
