@@ -1,0 +1,44 @@
+[
+  {
+    "id": "R1",
+    "condition": "high_absence OR low_study_time",
+    "conclusion": "engagement_concern",
+    "cf": 0.70,
+    "description": "Either weak attendance or weak study effort contributes an engagement-related support signal."
+  },
+  {
+    "id": "R2",
+    "condition": "low_first_period_performance AND low_second_period_performance",
+    "conclusion": "persistent_low_performance",
+    "cf": 0.90,
+    "description": "Two sequential academic periods supporting low-performance concern indicate persistence across periods."
+  },
+  {
+    "id": "R3",
+    "condition": "persistent_low_performance AND (high_failure_history OR engagement_concern)",
+    "conclusion": "core_academic_risk",
+    "cf": 0.85,
+    "description": "Persistent low performance is corroborated by failure history or an engagement-related concern."
+  },
+  {
+    "id": "R4",
+    "condition": "high_absence AND NOT (low_first_period_performance OR low_second_period_performance)",
+    "conclusion": "attendance_based_support_need",
+    "cf": 0.60,
+    "description": "Attendance-based support need when grade-concern membership is limited."
+  },
+  {
+    "id": "R5",
+    "condition": "low_second_period_performance AND NOT low_first_period_performance",
+    "conclusion": "emerging_performance_support_need",
+    "cf": 0.65,
+    "description": "A degree of support need associated with second-period concern when first-period concern is limited."
+  },
+  {
+    "id": "R6",
+    "condition": "core_academic_risk OR (high_failure_history AND low_study_time)",
+    "conclusion": "compounded_academic_support_need",
+    "cf": 0.90,
+    "description": "Compounded academic-support need from core risk or combined failure-history and study-time concerns."
+  }
+]
