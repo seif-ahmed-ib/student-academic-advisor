@@ -1,0 +1,2 @@
+# Keep immutable raw datasets byte-for-byte as downloaded.
+data/raw/** -text -whitespace
