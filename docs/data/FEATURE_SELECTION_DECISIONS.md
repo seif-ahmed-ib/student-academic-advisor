@@ -6,7 +6,7 @@ Project: **Student Academic Advisor**
 
 Dataset: **UCI Student Performance — `student-por.csv`**
 
-Decision version: **1.0**
+Decision version: **1.1**
 
 Status: **Approved**
 
@@ -55,8 +55,10 @@ for Part A and Part B:
 | `failures` | Coded count of previous class failures, 0–3 in the file | Key history input | K-Means input | Represents accumulated academic difficulty |
 
 The Expert System and K-Means will share the meaning of these raw attributes, but
-they will not share inference or model code. Part A may later convert key raw values
-into fuzzy facts. Part B will use a separately prepared and scaled numerical matrix.
+they will not share inference or model code. Part A converts the five raw values
+into the five initial facts approved in
+`docs/part-a/FUZZY_FACTS_AND_MEMBERSHIP_DESIGN.md`. Part B uses a separately
+prepared and scaled numerical matrix.
 
 ## 4. Evidence from the Selected Dataset
 
@@ -240,10 +242,10 @@ come from the shared academic concepts:
 
 | Shared concept | Part A | Part B |
 |---|---|---|
-| Current academic performance | Explainable fuzzy facts derived from `G1` and `G2`, if fuzzification is approved later | Scaled `G1` and `G2` inputs |
-| Attendance/engagement | Explainable fact derived from `absences`, if approved later | Scaled `absences` input |
-| Study effort | Explainable fact derived from `studytime`, if approved later | Scaled `studytime` input |
-| Prior academic difficulty | Explainable fact derived from `failures`, if approved later | Scaled `failures` input |
+| Current academic performance | Approved fuzzy facts derived from `G1` and `G2` | Scaled `G1` and `G2` inputs |
+| Attendance/engagement | Approved `high_absence` fact derived from `absences` | Scaled `absences` input |
+| Study effort | Approved `low_study_time` fact derived from `studytime` | Scaled `studytime` input |
+| Prior academic difficulty | Approved `high_failure_history` fact derived from `failures` | Scaled `failures` input |
 | Final outcome | Not an early premise | `G3` used only for post-hoc cluster description |
 
 Agreement between the Expert System and a cluster profile must be reported as an
@@ -285,7 +287,6 @@ sequence in those exact words.
 - Whether context fields such as `schoolsup`, `famsup`, `higher`, or `internet`
   support a specific production rule
 - Whether a derived grade-trend fact is useful
-- Exact fuzzy predicates and membership functions
 - Exact scaling method
 - Any justified outlier transformation
 - Candidate and final values of `k`

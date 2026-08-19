@@ -2,7 +2,7 @@
 
 Course: **Basic of AI Programming Skills (DSC 311)**
 Project Domain: **Student Academic Advisor**
-Architecture Version: **3.1**
+Architecture Version: **3.2**
 Status: **Approved**
 Approval Date: **2026-08-19**
 
@@ -81,13 +81,26 @@ External AI output is never adopted automatically.
 - Implement both Maximum and Union aggregation.
 - Keep K-Means independent from the Expert System at code level.
 - Connect Part A and Part B through domain features and result interpretation.
+- Use the UCI Student Performance dataset and `student-por.csv` as the approved
+  primary file.
+- Use `G1`, `G2`, `absences`, `studytime`, and `failures` as the approved shared
+  conceptual features for Part A and Part B.
+- Keep `G3` out of early Part A premises and K-Means training; use it only for
+  post-hoc interpretation.
+- Adopt a validated raw-to-fuzzy conversion step outside the Knowledge Base and
+  Inference Engine.
+- Produce exactly five approved concern-oriented initial fuzzy facts from one
+  student's five raw values.
+- Keep Part B on separately prepared raw features rather than Part A membership
+  degrees.
 
 ### 3.3 Optional or Deferred Enhancements
 
 The following are not part of the required initial implementation:
 
-- Raw-to-fuzzy conversion layer.
-- Membership-function generation from raw measurements.
+- Additional fuzzy predicates beyond the five approved initial facts unless later
+  justified during rule-base design.
+- Automatic membership-function generation or tuning.
 - Programmatic Inference Network Diagram generation.
 - GUI.
 - Web application or API.
@@ -98,6 +111,9 @@ The following are not part of the required initial implementation:
 - Deployment or Docker configuration.
 
 Optional components may only be added after the rubric requirements are safely completed.
+
+Raw-to-fuzzy conversion is no longer in this optional list. Architecture v3.2
+adopts it as an Implementation Decision; it is still not an Official Requirement.
 
 ## 4. Knowledge Representation
 
@@ -122,10 +138,10 @@ Facts use Object-Attribute-Value representation:
 Illustrative example only:
 
 ```text
-(Student_01, low_gpa, 0.80)
+(Student_01, low_first_period_performance, 0.80)
 ```
 
-The value is a fuzzy membership degree, not a raw GPA measurement.
+The value is a fuzzy membership degree, not a raw grade measurement.
 
 ## 5. Rule Representation
 
@@ -145,7 +161,7 @@ RuleSource:
 Example condition format:
 
 ```text
-gpa_low AND (attendance_poor OR workload_high)
+low_first_period_performance AND (high_absence OR low_study_time)
 ```
 
 The Knowledge Base contains no evaluation functions, control flow, or domain-specific `if/else` code.
@@ -193,9 +209,50 @@ NOT > AND > OR
 
 Parentheses override normal precedence.
 
-## 6. Fact and Working Memory Design
+## 6. Raw Input, Fuzzification, Facts, and Working Memory
 
-### 6.1 Fact Schema
+### 6.1 RawStudentInput Schema
+
+One Part A run begins with one validated raw student record:
+
+```text
+RawStudentInput:
+  object_id: string
+  g1: integer from 0 through 20
+  g2: integer from 0 through 20
+  absences: integer from 0 through 93
+  studytime: integer in {1, 2, 3, 4}
+  failures: integer in {0, 1, 2, 3}
+```
+
+Raw input is outside the Knowledge Base and Working Memory. Invalid values are
+rejected with a field-specific error and are never silently clipped or guessed.
+
+### 6.2 Approved Fuzzification Boundary
+
+The approved raw-to-fuzzy layer converts the five raw values into exactly five
+initial fuzzy facts:
+
+| Raw value | Initial fuzzy fact |
+|---|---|
+| `g1` | `low_first_period_performance` |
+| `g2` | `low_second_period_performance` |
+| `absences` | `high_absence` |
+| `studytime` | `low_study_time` |
+| `failures` | `high_failure_history` |
+
+The exact approved membership functions, breakpoints, coverage counts, and worked
+example are defined in `docs/part-a/FUZZY_FACTS_AND_MEMBERSHIP_DESIGN.md`.
+
+Fuzzification:
+
+- Is an adopted Implementation Decision, not an Official Requirement.
+- Runs outside the Knowledge Base and Inference Engine.
+- Contains no Production Rules or CF values.
+- Produces values in `[0,1]` without early rounding.
+- Creates zero-valued initial facts rather than dropping them.
+
+### 6.3 Fact Schema
 
 ```text
 Fact:
@@ -207,23 +264,24 @@ Fact:
 
 Definitions:
 
-- `INITIAL`: present when the inference run starts.
+- `INITIAL`: produced from the approved input boundary before inference starts.
 - `DERIVED`: produced by a Production Rule.
 - `object_id`: identifies the student being advised.
 
-### 6.2 Working Memory
+### 6.4 Working Memory
 
 Each inference run is scoped to one student.
 
 Working Memory:
 
-- Starts with the student's initial fuzzy O-A-V facts.
+- Is initialized with all five fuzzy O-A-V facts after input validation and
+  fuzzification.
 - Grows as rules produce derived conclusions.
 - Is separate from the static Knowledge Base.
-- Can only be modified by the Inference Engine.
+- Accepts initial facts only during pre-inference initialization; after that, only
+  the Inference Engine writes derived facts.
 - Never mixes facts belonging to different students in one run.
-
-Raw measurements, if introduced later, remain outside the Knowledge Base and Working Memory until converted into valid fuzzy facts.
+- Never stores the original raw measurements.
 
 ## 7. Knowledge Base Validation
 
@@ -311,13 +369,19 @@ The dependency graph is the Source of Truth for this classification.
 
 Before inference begins:
 
-1. Validate the Knowledge Base.
-2. Identify all required base facts.
-3. Confirm that every required base fact exists for the current student.
-4. Build the dependency graph.
-5. Produce the deterministic topological order.
+1. Load and parse the Knowledge Base.
+2. Validate the Knowledge Base, build the dependency graph, and detect cycles
+   before creating or touching Working Memory facts.
+3. Validate the current student's `RawStudentInput`.
+4. Apply the five approved membership mappings.
+5. Initialize Working Memory with all five fuzzy facts, including zero-valued facts.
+6. Identify all base facts required by the loaded rules.
+7. Confirm that every required base fact exists for the current student.
+8. Produce the deterministic topological order.
 
-If a required base fact is missing, inference does not start and the missing attributes are reported.
+If structural validation, raw-input validation, fuzzification validation, or the
+required-base-fact check fails, inference does not start and the specific errors are
+reported.
 
 During inference, every rule is evaluated exactly once in topological order.
 
@@ -369,33 +433,43 @@ Important distinctions:
 
 ## 13. Fuzzy Logic Calculations
 
-### 13.1 AND
+### 13.1 Initial Fact Fuzzification
+
+The raw-to-fuzzy layer applies the five approved membership mappings before
+inference starts. These mappings produce initial fuzzy facts; they do not calculate
+rule FV or CV and do not determine whether a rule fired.
+
+The detailed formulas live in
+`docs/part-a/FUZZY_FACTS_AND_MEMBERSHIP_DESIGN.md`. Membership-function boundaries
+must not be duplicated inside the Knowledge Base or Inference Engine.
+
+### 13.2 AND
 
 ```text
 AND(a, b) = min(a, b)
 ```
 
-### 13.2 OR
+### 13.3 OR
 
 ```text
 OR(a, b) = max(a, b)
 ```
 
-### 13.3 NOT
+### 13.4 NOT
 
 ```text
 NOT(a) = 1 - a
 ```
 
-### 13.4 Fuzzy Value
+### 13.5 Fuzzy Value
 
 FV is the composite fuzzy value of the complete rule condition after evaluating its AST.
 
-### 13.5 Confidence Factor
+### 13.6 Confidence Factor
 
 CF is fixed, author-assigned, and constrained to `[0,1]`.
 
-### 13.6 Confidence Value
+### 13.7 Confidence Value
 
 ```text
 CV = FV × CF
@@ -494,22 +568,37 @@ The diagram may be produced manually using a drawing tool. Programmatic generati
 
 The K-Means pipeline remains independent from the Expert System implementation.
 
-It will include:
+Approved data decisions:
 
-1. Dataset selection and source documentation.
-2. Data understanding.
-3. Data cleaning.
-4. Missing-value handling.
-5. Categorical encoding when required.
-6. Feature selection.
-7. Scaling appropriate to the real data.
-8. K-Means training.
-9. Elbow Method.
-10. Silhouette Score.
-11. Cluster visualization.
-12. Cluster size and centroid profiling.
-13. Interpretation using original feature scales when possible.
-14. Comparison with Part A reasoning patterns.
+- Source: UCI Student Performance.
+- Primary file: `student-por.csv`, containing 649 records and 33 columns.
+- Do not concatenate it with `student-mat.csv` because the source documents 382
+  students shared between the two files.
+- Initial K-Means features: `G1`, `G2`, `absences`, `studytime`, and `failures`.
+- `G3` is excluded from K-Means training and reserved for post-hoc description.
+- The selected raw file contains no missing values, empty strings, or exact
+  duplicate rows; these conditions are checked and reported without fabricated
+  imputation or deletion.
+- The five initial features are already numerical or ordinal-coded, so nominal
+  encoding is not required for the initial feature matrix.
+- Scaling is required, but the exact scaler remains open.
+- Part B uses prepared raw feature values, never Part A membership degrees.
+
+The pipeline will include:
+
+1. Source-aware loading using the file's semicolon delimiter.
+2. Repeatable data-quality validation.
+3. Selection of the five approved features.
+4. Documented treatment of valid extremes and skew.
+5. Scaling appropriate to the observed data.
+6. K-Means training.
+7. Elbow Method.
+8. Silhouette Score.
+9. Cluster visualization.
+10. Cluster size and centroid profiling.
+11. Interpretation using original feature scales when possible.
+12. Post-hoc use of `G3` without treating it as a cluster label.
+13. Comparison with Part A reasoning patterns.
 
 The following must not be assumed before training:
 
@@ -525,12 +614,16 @@ Cluster labels are not ground truth.
 The two parts are connected through:
 
 - The Student Academic Advisor domain.
-- Similar conceptual student-performance features when supported by the dataset.
+- The approved shared concepts: first-period performance, second-period
+  performance, absences, study time, and failure history.
+- Part A fuzzy facts derived from one student's five raw values.
+- Part B clustering on separately scaled raw values for the same five concepts.
 - Final report interpretation.
 
 They are not connected by:
 
 - Feeding cluster IDs directly into the Expert System.
+- Feeding Part A fuzzy membership degrees into K-Means.
 - Treating a cluster as a verified risk label.
 - Forcing K-Means results to agree with the Production Rules.
 
@@ -545,6 +638,8 @@ student-academic-advisor/
 │   │   ├── knowledge_base/
 │   │   │   └── rules.json
 │   │   ├── models.py
+│   │   ├── raw_input.py
+│   │   ├── fuzzification.py
 │   │   ├── rule_parser.py
 │   │   ├── validation.py
 │   │   ├── fuzzy_logic.py
@@ -558,11 +653,15 @@ student-academic-advisor/
 │       ├── clustering.py
 │       └── interpretation.py
 ├── data/
+│   └── raw/
+│       └── uci_student_performance/
 ├── tests/
 │   ├── expert_system/
 │   └── ml_pipeline/
 ├── docs/
 │   ├── project-management/
+│   ├── data/
+│   ├── part-a/
 │   ├── diagrams/
 │   └── report/
 ├── run_demo.py
@@ -570,12 +669,20 @@ student-academic-advisor/
 └── requirements.txt
 ```
 
-No raw-input or fuzzification module is included at this stage.
+`raw_input.py` validates `RawStudentInput`. `fuzzification.py` owns the five
+membership mappings and creates the initial fuzzy Facts. Neither module contains
+Production Rules, CF values, dependency logic, or inference control flow.
 
 ## 20. Required Test Coverage
 
 Part A tests must cover:
 
+- Raw input required fields, types, and accepted domains.
+- All approved membership-function boundaries and partial values.
+- Fuzzification outputs across all 649 selected records remain in `[0,1]`.
+- Exactly five initial facts are produced for each valid input.
+- Zero-valued initial facts remain present.
+- The documented `POR-0649` fuzzification example.
 - Rule parsing.
 - Operator precedence.
 - Nested conditions.
@@ -598,31 +705,40 @@ Part A tests must cover:
 - Trace completeness.
 - Complete end-to-end inference.
 
-Part B tests will be defined after selecting the dataset and final preprocessing pipeline.
+Part B tests must already cover:
+
+- Correct semicolon-delimited loading of `student-por.csv`.
+- Expected raw shape of 649 rows and 33 columns.
+- Missing-value and exact-duplicate checks.
+- Exact selection and order of the five approved K-Means features.
+- Exclusion of `G3` from the K-Means input matrix.
+
+Additional Part B tests will be finalized after the scaling and outlier-treatment
+decisions are approved.
 
 ## 21. Remaining Open Decisions
 
-The following remain open until dataset research and real data analysis:
+The following remain open:
 
-- Final dataset.
-- Dataset source and license.
-- Available columns.
-- Part A fuzzy predicates.
-- Whether raw-to-fuzzy conversion is needed.
-- Membership-function shapes and breakpoints, if adopted.
-- Missing-value strategy.
-- Encoding strategy.
-- Scaling method.
-- Outlier handling.
-- K-Means feature set.
-- Final K.
-- Cluster interpretations.
+- Whether any deferred context fields such as `schoolsup`, `famsup`, `higher`, or
+  `internet` are justified in a specific Production Rule.
+- Whether a separately justified grade-trend fact is needed.
 - Rule Base content.
 - Number of Production Rules.
-- Conclusion names.
+- Intermediate and Final Conclusion names.
 - CF values and their justification.
 - Final academic recommendations.
-- Final Part A/Part B comparison method.
+- Scaling method for the five K-Means inputs.
+- Outlier transformation, if any.
+- Candidate and final values of K.
+- Cluster visualizations.
+- Cluster interpretations.
+- Final Part A/Part B empirical comparison method.
+- Manual or programmatic production of the required Inference Network Diagram.
+
+The dataset, source, primary file, five shared features, five initial fuzzy facts,
+membership functions, raw-to-fuzzy adoption, missing-value result, and initial
+encoding decision are approved and are no longer open.
 
 ## 22. Rejected Architecture Choices
 
@@ -637,16 +753,26 @@ The following must not be reintroduced without an approved architecture change:
 - Silent duplicate-producer overwriting.
 - Automatic duplicate-producer aggregation.
 - Including Intermediate CVs in final KB aggregation.
-- Mandatory raw-to-fuzzy conversion.
+- Labeling raw-to-fuzzy conversion as an Official Requirement.
+- Asking users to invent fuzzy membership degrees manually.
+- Placing membership breakpoints in the Knowledge Base or Inference Engine.
+- Feeding Part A fuzzy membership degrees into K-Means.
 - Mandatory programmatic diagram generation.
 - Raw Input inside the Knowledge Base.
+- Raw measurements inside Working Memory.
 - Working Memory inside the Knowledge Base.
-- Premature Dataset, K, or cluster-label assumptions.
+- Silent changes to the approved dataset, primary file, or five-feature scope.
+- Premature K or cluster-label assumptions.
 - GUI, API, database, agents, ANN, or deployment complexity.
 
 ## 23. Approval
 
-Architecture v3.1 is approved as the implementation baseline.
+Architecture v3.2 is approved as the implementation baseline.
+
+Version 3.2 adopts the validated raw-input and fuzzification boundary, synchronizes
+the approved UCI dataset and five-feature scope, and leaves every other v3.1
+inference, rule, dependency, trace, aggregation, diagram, and separation decision
+unchanged.
 
 No project code has been written at this stage.
 
