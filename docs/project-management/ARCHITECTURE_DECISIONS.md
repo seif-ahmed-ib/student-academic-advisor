@@ -2,9 +2,9 @@
 
 Course: **Basic of AI Programming Skills (DSC 311)**
 Project Domain: **Student Academic Advisor**
-Architecture Version: **3.3**
+Architecture Version: **3.4**
 Status: **Approved**
-Approval Date: **2026-08-19**
+Approval Date: **2026-08-23**
 
 ## 1. Purpose
 
@@ -104,6 +104,18 @@ External AI output is never adopted automatically.
 - Interpret every Final Conclusion as a degree of academic-support need reached
   through a distinct evidence pathway, so Maximum and Union aggregate values in
   one coherent semantic direction.
+- Scale the five Part B inputs with `StandardScaler` before K-Means.
+- Evaluate candidate values `K=2` through `K=10` using inertia and Silhouette
+  Score.
+- Use `K=2`, selected by the highest observed Silhouette Score (`0.2716647`) and
+  parsimony relative to the close `K=4` result.
+- Fit the final K-Means model with `random_state=42` and `n_init=20`.
+- Interpret the two trained profiles post-hoc as
+  `stronger_academic_profile` and
+  `higher_academic_support_need_profile`; these are descriptive names, not
+  ground-truth labels.
+- Compare Part A and Part B only after both systems run independently, joining
+  their outputs by `source_row` for descriptive integration analysis.
 
 ### 3.3 Optional or Deferred Enhancements
 
@@ -572,7 +584,7 @@ U(a, b) = a + b - (a × b)
 
 For more than two values, fold one value at a time in deterministic Final Conclusion order.
 
-Both Maximum and Union will be implemented and reported.
+Both Maximum and Union are implemented and reported.
 
 Intermediate Conclusion CVs must not be included in Knowledge-Base-level aggregation.
 
@@ -611,10 +623,10 @@ Approved data decisions:
   imputation or deletion.
 - The five initial features are already numerical or ordinal-coded, so nominal
   encoding is not required for the initial feature matrix.
-- Scaling is required, but the exact scaler remains open.
+- Scaling uses `StandardScaler`, fitted on the five training features.
 - Part B uses prepared raw feature values, never Part A membership degrees.
 
-The pipeline will include:
+The implemented pipeline includes:
 
 1. Source-aware loading using the file's semicolon delimiter.
 2. Repeatable data-quality validation.
@@ -630,7 +642,7 @@ The pipeline will include:
 12. Post-hoc use of `G3` without treating it as a cluster label.
 13. Comparison with Part A reasoning patterns.
 
-The following must not be assumed before training:
+The following were not assumed before training:
 
 - The correct value of K.
 - Cluster labels.
@@ -638,6 +650,11 @@ The following must not be assumed before training:
 - Which cluster represents academic risk.
 
 Cluster labels are not ground truth.
+
+The executed pipeline evaluated `K=2` through `K=10`. `K=2` achieved the highest
+observed Silhouette Score (`0.2716647`) and was adopted as the final value. The
+final profiles contain 332 and 317 students respectively. `G3` remains excluded
+from training and is used only for post-hoc description.
 
 ## 18. Part A and Part B Coherence
 
@@ -678,23 +695,35 @@ student-academic-advisor/
 │   │   ├── inference_engine.py
 │   │   ├── trace.py
 │   │   └── aggregation.py
-│   └── ml_pipeline/
-│       ├── data_preparation.py
-│       ├── clustering.py
-│       └── interpretation.py
+│   ├── ml_pipeline/
+│   │   ├── data_preparation.py
+│   │   ├── clustering.py
+│   │   ├── reporting.py
+│   │   └── run_pipeline.py
+│   └── integration/
+│       ├── analysis.py
+│       ├── reporting.py
+│       └── run_analysis.py
 ├── data/
 │   └── raw/
 │       └── uci_student_performance/
 ├── tests/
 │   ├── expert_system/
-│   └── ml_pipeline/
+│   ├── ml_pipeline/
+│   └── integration/
+├── notebooks/
+│   └── part_b_kmeans_analysis.ipynb
+├── outputs/
+│   ├── part-a/
+│   ├── ml/
+│   └── integration/
 ├── docs/
 │   ├── project-management/
 │   ├── data/
 │   ├── part-a/
-│   ├── diagrams/
+│   ├── part-b/
+│   ├── integration/
 │   └── report/
-├── run_demo.py
 ├── README.md
 └── requirements.txt
 ```
@@ -735,7 +764,7 @@ Part A tests must cover:
 - Trace completeness.
 - Complete end-to-end inference.
 
-Part B tests must already cover:
+Part B tests cover:
 
 - Correct semicolon-delimited loading of `student-por.csv`.
 - Expected raw shape of 649 rows and 33 columns.
@@ -743,21 +772,39 @@ Part B tests must already cover:
 - Exact selection and order of the five approved K-Means features.
 - Exclusion of `G3` from the K-Means input matrix.
 
-Additional Part B tests will be finalized after the scaling and outlier-treatment
-decisions are approved.
+Part B and integration tests also cover:
 
-## 21. Remaining Open Decisions
+- `StandardScaler` fitting and transformed feature shape.
+- Deterministic K-Means evaluation and final fitting.
+- Candidate-K metrics and selection of `K=2`.
+- Cluster assignments and report artifact generation.
+- One-to-one Part A/Part B joining by `source_row`.
+- Post-hoc integration summaries without a configurable threshold.
+- Rejection of invalid or mismatched cluster-assignment data.
 
-The following remain open:
+## 21. Completion Decisions and Remaining Optional Work
 
-- Final human-readable output wording that presents the three approved
-  academic-support conclusions to the user without changing their rule semantics.
-- Scaling method for the five K-Means inputs.
-- Outlier transformation, if any.
-- Candidate and final values of K.
-- Cluster visualizations.
-- Cluster interpretations.
-- Final Part A/Part B empirical comparison method.
+The following implementation decisions are now closed:
+
+- Scaling method: `StandardScaler`.
+- Outlier treatment: retain valid source-domain values; perform no automatic
+  deletion or clipping.
+- Candidate values: `K=2` through `K=10`.
+- Final value: `K=2`.
+- Evaluation: inertia, Elbow visualization, and Silhouette Score.
+- Cluster interpretation: post-hoc centroid profiles on original feature scales.
+- Part A/Part B comparison: independent execution followed by descriptive joining
+  and cluster-level comparison.
+
+Remaining work is administrative or presentation-oriented rather than an open
+architecture decision:
+
+- Fill the official Cover Sheet using the real team information.
+- Export and visually inspect the final written report in the chosen submission
+  format.
+- Prepare each team member for the individual assessment.
+- Optionally add a Streamlit presentation layer after required deliverables are
+  finalized.
 - Manual or programmatic production of the required Inference Network Diagram.
 
 The dataset, source, primary file, five shared features, five initial fuzzy facts,

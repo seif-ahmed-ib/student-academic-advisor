@@ -3,215 +3,223 @@
 Course: **Basic of AI Programming Skills (DSC 311)**
 Domain: **Student Academic Advisor**
 Part B choice: **K-Means Clustering**
+Checklist version: **2.0**
+Audit date: **2026-08-23**
 
-## Source of Truth
+## Status Legend
 
-The following official files are binding:
+- `[x]` Implemented and supported by a repository artifact or test.
+- `[ ]` Still requires a team, administrative, presentation, or release action.
+- Items labeled **Optional** are not official project requirements.
+
+## Binding Sources
 
 1. `DSC-311-Group-Project-Cover-Sheets-(HNU--Summer2026).pdf`
 2. `AI_Skills_Project_Description.pdf`
 
-Anything not stated in those files must be labeled as an optional enhancement or an internal workflow decision.
+No Git, deployment, GUI, fixed rule count, fixed dataset, or Streamlit requirement
+is inferred from these files.
 
-## Current Decisions
+## Approved Project Decisions
 
-- [x] Domain: Student Academic Advisor
-- [x] Part A: Fuzzy rule-based expert system
-- [x] Part B: K-Means clustering
-- [x] Part A and Part B must form one coherent project
-- [x] Git and GitHub are mandatory internal workflow tools, not official course requirements
-- [x] Stable releases go to `main`; ongoing work goes to `develop`
-- [ ] Final dataset selected and approved
-- [ ] Second knowledge-representation technique selected
-- [ ] Inference strategy selected and documented
-- [ ] Rule-base storage format selected
-- [ ] Final-conclusion aggregation method selected
+- [x] Domain: Student Academic Advisor.
+- [x] Part A: fuzzy rule-based Expert System.
+- [x] Part B: K-Means clustering.
+- [x] Dataset: UCI Student Performance, primary file `student-por.csv`.
+- [x] Shared concepts: `G1`, `G2`, `absences`, `studytime`, and `failures`.
+- [x] Second Knowledge Representation technique: O-A-V triplets.
+- [x] Inference strategy: forward chaining.
+- [x] External rule storage: JSON with separate rule fields.
+- [x] Final aggregation: both Maximum and fuzzy Union.
+- [x] Final K-Means value: `K=2`, selected from measured evidence.
+- [x] Part A and Part B connected through post-hoc domain interpretation without
+  training-time coupling.
 
-## Part A - Knowledge Representation
+## Part A - Knowledge Representation (2 marks)
 
-- [ ] Represent facts and domain knowledge in a structured form.
-- [ ] Use at least two distinct knowledge-representation techniques.
-- [ ] Use production rules; they are mandatory.
-- [ ] Pair production rules with at least one of:
-  - [ ] Frame-based representation
-  - [ ] Object-Attribute-Value triplets
-  - [ ] Hierarchical/semantic network representation
-- [ ] If frames are selected, include slots, default values, and value restrictions.
-- [ ] If O-A-V is selected, express facts as `(object, attribute, value)`.
-- [ ] If a semantic network is selected, represent `is-a` or `part-of` relationships.
-- [ ] Keep the knowledge base separate from inference logic.
-- [ ] Do not hide conclusions in general-purpose hard-coded `if/else` logic.
-- [ ] Keep the rule base understandable to a domain expert who does not code.
+- [x] Represent facts and domain knowledge structurally.
+- [x] Use two distinct techniques: Production Rules and O-A-V triplets.
+- [x] Express fuzzy facts as `(object, attribute, value)`.
+- [x] Keep the Knowledge Base separate from inference logic.
+- [x] Store six readable Production Rules in
+  `student_academic_advisor/expert_system/knowledge_base/rules.json`.
+- [x] Keep rule `id`, `condition`, `conclusion`, `cf`, and `description` separate.
+- [x] Parse readable conditions into an AST instead of hard-coding domain
+  conclusions in engine `if/else` statements.
+- [x] Keep the rule base readable by a non-programming domain expert.
 
 ## Part A - Rule Base
 
-- [ ] Create a substantial, non-trivial set of production rules.
-- [ ] Ensure the rules cover the Student Academic Advisor domain.
-- [ ] Include at least one nested/parenthesized premise.
-- [ ] Correctly apply precedence: `NOT`, then `AND`, then `OR`.
-- [ ] Include at least one chained rule.
-- [ ] Use one rule's conclusion as another rule's premise.
-- [ ] Clearly distinguish intermediate conclusions from final conclusions.
-- [ ] Ensure every intermediate conclusion is consumed by another rule.
-- [ ] Ensure final conclusions are not consumed by other rules.
+- [x] Provide a compact, non-trivial six-rule domain network.
+- [x] Include nested/parenthesized conditions in R3, R4, and R6.
+- [x] Enforce precedence `NOT > AND > OR`; parentheses override it.
+- [x] Include chained dependencies R1 -> R3, R2 -> R3, and R3 -> R6.
+- [x] Derive Intermediate and Final status structurally.
+- [x] Intermediate Conclusions:
+  `engagement_concern`, `persistent_low_performance`, and `core_academic_risk`.
+- [x] Final Conclusions:
+  `attendance_based_support_need`,
+  `emerging_performance_support_need`, and
+  `compounded_academic_support_need`.
+- [x] Reject duplicate Rule IDs and duplicate conclusion producers.
+- [x] Reject unknown fact references and base/derived name collisions.
 
-## Part A - Inference Engine
+## Part A - Inference Engine (1 mark)
 
-- [ ] Implement a working inference engine.
-- [ ] Implement forward chaining, backward chaining, or both.
-- [ ] State clearly which inference strategy is implemented.
-- [ ] Resolve rule dependencies correctly.
-- [ ] Evaluate a prerequisite rule before any dependent rule.
-- [ ] Use topological ordering for dependency resolution.
-- [ ] Detect circular dependencies.
-- [ ] Do not silently evaluate circular dependencies.
-- [ ] Provide explainability for every reached conclusion.
-- [ ] Show which rules fired.
-- [ ] Show the order in which rules fired.
+- [x] Implement deterministic forward chaining.
+- [x] Derive dependencies from parsed rule conditions.
+- [x] Topologically order rules before evaluation.
+- [x] Use Knowledge Base declaration order for deterministic tie-breaking.
+- [x] Detect self-dependencies and circular dependency paths.
+- [x] Refuse to infer when Knowledge Base validation fails.
+- [x] Evaluate every rule once after its premises become available.
+- [x] Propagate producing-rule CVs through Intermediate Conclusions.
+- [x] Preserve zero-valued derived facts as defined facts.
+- [x] Capture which rules were evaluated/fired and their exact order.
 
-## Part A - Fuzzy Logic
+## Part A - Fuzzy Logic (2 marks)
 
-- [ ] Represent key domain facts as fuzzy values in `[0, 1]`.
-- [ ] Do not represent all key facts as simple Boolean values.
-- [ ] Implement fuzzy `AND` as minimum.
-- [ ] Implement fuzzy `OR` as maximum.
-- [ ] Implement fuzzy `NOT` as `1 - value`.
-- [ ] Calculate the Fuzzy Value (FV) of every rule premise.
-- [ ] Assign a fixed author-defined Confidence Factor (CF) to every rule.
-- [ ] Keep every CF in `[0, 1]`.
-- [ ] Calculate `CV = FV * CF` for every rule.
-- [ ] Aggregate all final-conclusion CVs at knowledge-base level.
-- [ ] Implement the Maximum Method and/or the Union Method.
-- [ ] For Maximum Method, calculate `CV(KB) = max(final CVs)`.
-- [ ] If Union Method is implemented, calculate `U(a,b) = a + b - a*b`.
-- [ ] Fold Union values one at a time when combining more than two values.
+- [x] Represent five key domain facts with membership values in `[0,1]`.
+- [x] Implement `AND = minimum`.
+- [x] Implement `OR = maximum`.
+- [x] Implement `NOT = 1 - value`.
+- [x] Calculate one FV for every evaluated rule condition.
+- [x] Store one author-assigned CF in `[0,1]` for every rule.
+- [x] Calculate `CV = FV * CF` without early rounding.
+- [x] Define `fired` as `FV > 0` and `contributes` as `CV > 0`.
+- [x] Introduce no arbitrary configurable threshold.
+- [x] Aggregate structurally Final CVs with Maximum.
+- [x] Aggregate structurally Final CVs with pairwise fuzzy Union.
+- [x] Exclude Intermediate CVs from final Knowledge Base aggregation.
 
-## Part A - Inference Network Diagram
+## Part A - Inference Network Diagram (1 mark)
 
-- [ ] Produce a diagram of the rule network.
-- [ ] Draw an assertion/fact as a square.
-- [ ] Draw an intermediate conclusion as a circle inside a square.
-- [ ] Draw a final conclusion as a plain circle.
-- [ ] Label connecting gates as `AND`, `OR`, or `NOT`.
-- [ ] Show at least one complete path from facts to an intermediate conclusion to a final conclusion.
-- [ ] Include at least one fully worked inference example in the report.
-- [ ] Show every FV, CF, and CV calculation in that example.
+- [x] Produce PNG and SVG inference-network artifacts.
+- [x] Use squares for initial assertions/facts.
+- [x] Use circles inside squares for Intermediate Conclusions.
+- [x] Use plain circles for Final Conclusions.
+- [x] Use labeled AND, OR, and NOT gates.
+- [x] Match the exact six-rule Knowledge Base and dependency structure.
+- [x] Preserve nested-condition groupings.
+- [x] Provide a complete `POR-0649` worked example.
+- [x] Show every premise value, operator step, FV, CF, CV, derived conclusion,
+  Maximum, and Union calculation.
 
-## Part B - Domain and Algorithm
+## Part B - Data Preparation (2 marks)
 
-- [x] Choose one algorithm: K-Means clustering.
-- [ ] Use data from the same Student Academic Advisor domain as Part A.
-- [ ] Group students using relevant performance features.
-- [ ] Select a sensible number of clusters.
-- [ ] Justify the selected number of clusters.
-- [ ] Interpret each cluster in the academic domain.
-- [ ] Do not assume cluster meaning before training and analysis.
+- [x] Source and describe the UCI Student Performance dataset.
+- [x] Record DOI, license, selected subject file, delimiter, shape, and source
+  data dictionary.
+- [x] Use 649 Portuguese-course records with 33 raw columns.
+- [x] Check missing values, empty strings, and exact duplicates.
+- [x] Report zero missing rows and zero exact duplicate rows in the selected file.
+- [x] Avoid fabricated imputation or deletion when no such cleaning is needed.
+- [x] Select `G1`, `G2`, `absences`, `studytime`, and `failures`.
+- [x] Explain why nominal encoding is unnecessary for the selected matrix.
+- [x] State that `studytime` is an ordinal code, not exact hours.
+- [x] Scale all five training features with `StandardScaler`.
+- [x] Retain valid extremes instead of mechanically deleting them as outliers.
+- [x] Exclude `G3` from training and reserve it for post-hoc description.
 
-## Part B - Data Preparation
+## Part B - Model Implementation (2 marks)
 
-- [ ] State and document the dataset source.
-- [ ] Describe the dataset clearly.
-- [ ] Inspect and handle missing values.
-- [ ] Encode categorical features when needed.
-- [ ] Normalize/scale numeric features when needed.
-- [ ] Confirm that selected data belongs to the Student Academic Advisor domain.
-- [ ] Obtain TA approval for a comparable alternative dataset when required.
+- [x] Implement K-Means using scikit-learn.
+- [x] Fit models on the scaled five-feature matrix.
+- [x] Evaluate candidate values `K=2` through `K=10`.
+- [x] Use `random_state=42` and `n_init=20` for reproducibility.
+- [x] Select and fit the final `K=2` model.
+- [x] Produce one cluster assignment for every one of the 649 retained rows.
+- [x] Save assignments, profiles, metrics, chart, and reproducibility metadata.
+- [x] Provide an executable Part B Jupyter notebook with saved outputs.
 
-## Part B - Model Implementation
+## Part B - Evaluation (1 mark)
 
-- [ ] Implement K-Means correctly.
-- [ ] Use a standard library such as scikit-learn.
-- [ ] Train the model on the prepared feature matrix.
-- [ ] Produce a cluster assignment for every included data point.
+- [x] Report inertia for every candidate K.
+- [x] Report Silhouette Score for every candidate K.
+- [x] Include the Elbow and Silhouette visualization.
+- [x] Justify K=2 using the highest observed Silhouette Score (`0.2716647`) and
+  parsimony.
+- [x] State that the score indicates overlapping rather than perfectly separated
+  natural groups.
+- [x] Interpret clusters only after fitting and inspecting original-scale profiles.
+- [x] Describe Cluster 0 as the stronger academic profile (332 students).
+- [x] Describe Cluster 1 as the higher academic-support-need profile (317 students).
+- [x] Treat profile names as descriptive, not ground-truth labels.
+- [x] Use G3 only as a post-hoc descriptive check.
+- [x] Connect the observed population patterns to the Student Academic Advisor
+  domain.
 
-## Part B - Evaluation and Interpretation
+## Part A / Part B Coherence
 
-- [ ] Justify the number of clusters using appropriate evidence.
-- [ ] Use the Elbow Method and/or Silhouette Score.
-- [ ] Visualize and/or describe the clusters.
-- [ ] Analyze cluster centers and feature distributions before naming clusters.
-- [ ] Explain whether clusters represent meaningful real-world student groups.
-- [ ] Connect the clustering results to the Student Academic Advisor domain.
-- [ ] Explain the relationship between Part B results and Part A recommendations.
+- [x] Use the same five academic concepts in independently prepared forms.
+- [x] Do not feed Expert System memberships or conclusions into K-Means training.
+- [x] Do not feed cluster IDs into the Expert System.
+- [x] Join independent outputs post-hoc by `source_row` for 649 students.
+- [x] Compare cluster-level Final CVs, contribution rates, Maximum, and Union.
+- [x] Report broad alignment in compounded support need.
+- [x] Explain the complementary R4 attendance pattern rather than hiding it.
+- [x] Avoid causality, prediction-accuracy, or ground-truth claims.
 
 ## Deliverables
 
-- [ ] Submit Part A source code.
-- [ ] Include the expert system.
-- [ ] Include the inference engine.
-- [ ] Include the fuzzy-logic module.
-- [ ] Submit Part B source code.
-- [ ] Include the K-Means implementation.
-- [ ] Submit a short written report.
-- [ ] Include the domain description in the report.
-- [ ] Include the knowledge-representation choices.
-- [ ] Include the full rule base.
-- [ ] Include at least one fully worked inference example.
-- [ ] Show FV, CF, and CV in the worked example.
-- [ ] Include the inference network diagram.
-- [ ] Explain the ML approach and data used.
-- [ ] Present the ML results.
-- [ ] Interpret the results and connect them to the domain.
+- [x] Part A source code: facts, parser, Knowledge Base, dependency resolver,
+  fuzzy logic, inference engine, trace, and aggregation.
+- [x] Part B source code: data preparation, K-Means, evaluation, reporting, and
+  reproducible pipeline entry point.
+- [x] Full external Production Rule Knowledge Base.
+- [x] Worked inference example with FV, CF, and CV.
+- [x] Inference Network Diagram in PNG and SVG.
+- [x] K-Means metrics, cluster profiles, assignments, and visualization.
+- [x] Executable Part B notebook with saved outputs.
+- [x] Part A / Part B integration analysis and chart.
+- [x] Short written report in Markdown covering every required topic.
+- [ ] Export the final report to the submission format requested by the TA and
+  visually inspect the exported pages.
 
 ## Cover Sheet and Administration
 
-- [ ] Select `Student Academic Advisor` on the cover sheet.
-- [ ] Type team information; do not handwrite it.
-- [ ] Order team member IDs by ID.
-- [ ] Write full names in Arabic.
+- [ ] Select `Student Academic Advisor` on the official Cover Sheet.
+- [ ] Insert the real team IDs in ascending order.
+- [ ] Insert every full name in Arabic using typed text.
 - [ ] Keep only attendance signatures handwritten.
-- [ ] Confirm that the team does not exceed the six rows available on the cover sheet.
+- [ ] Confirm the final team count does not exceed six.
+- [ ] Attach or submit the Cover Sheet using the TA's required procedure.
 
-## Individual / Viva Preparation
+These items remain open because team identities and the submission procedure must
+not be invented.
 
-The official files specify individual marks but do not define the exact viva format.
+## Individual Assessment / Viva
 
-- [ ] Prepare every member for Part A individual assessment (4 marks).
-- [ ] Prepare every member for Part B individual assessment (5 marks).
-- [ ] Explain the selected knowledge representations.
-- [ ] Explain facts, intermediate conclusions, and final conclusions.
-- [ ] Evaluate nested fuzzy conditions manually.
-- [ ] Explain topological ordering and cycle detection.
-- [ ] Calculate FV, CF, CV, Maximum, and Union manually.
-- [ ] Explain the rule trace and fired-rule order.
-- [ ] Explain why scaling matters for K-Means.
-- [ ] Explain how K was selected.
-- [ ] Interpret clusters using actual results rather than assumptions.
-- [ ] Explain how Part A and Part B form one coherent advisor.
+The official Cover Sheet allocates 4 individual marks in Part A and 5 individual
+marks in Part B, but does not prescribe the exact viva questions.
 
-## Internal Git Workflow - Not an Official Course Requirement
+- [ ] Every member can explain Production Rules and O-A-V facts.
+- [ ] Every member can manually evaluate nested fuzzy conditions.
+- [ ] Every member can calculate FV, CF, CV, Maximum, and Union.
+- [ ] Every member can explain forward chaining, topological ordering, cycles,
+  Intermediate Conclusions, and the live trace.
+- [ ] Every member can explain data preparation, scaling, K-Means, inertia,
+  Silhouette Score, K=2, cluster profiles, and limitations.
+- [ ] Every member can explain why Part A and Part B are coherent but independent.
+- [ ] Conduct a final mock viva.
 
-- [x] Initialize the local Git repository.
-- [x] Create and push `main`.
-- [x] Create and push `develop`.
-- [x] Add an initial `README.md` and `.gitignore`.
-- [ ] Work on `develop` during implementation.
-- [ ] Commit only reviewed, coherent changes.
-- [ ] Merge approved milestones into `main`.
-- [ ] Keep secrets, virtual environments, caches, and temporary files out of Git.
+## Internal Git/GitHub Workflow - Not an Official Requirement
 
-## Explicitly Not Required by the Official Files
+- [x] Initialize the repository and use `main`, `develop`, feature branches, and
+  Pull Requests.
+- [x] Keep virtual environments, caches, and temporary archives out of Git.
+- [x] Commit tested milestones and retain reproducible outputs.
+- [x] Maintain a clean `develop` branch after merged work.
+- [ ] Complete the final audit and merge it into `develop`.
+- [ ] Merge the approved release from `develop` into `main`.
+- [ ] Tag the final release if the team chooses to use release tags.
 
-The following must remain optional unless the TA issues new requirements:
+## Optional Enhancements - Not Required
 
-- GUI or web application
-- API
-- Database
-- Authentication
-- Docker
-- Deployment
-- Dashboard
-- A fixed minimum number of rules
-- A specific dataset
-- JSON or YAML rule storage
-- Git or GitHub
-- Directly feeding K-Means cluster labels into the inference engine
+- [ ] Streamlit presentation interface.
+- [ ] Public deployment.
+- [ ] Additional automated CI workflow.
+- [ ] Extra fuzzy predicates or rules beyond the approved six-rule design.
+- [ ] Additional cluster experiments beyond the reported rubric evidence.
 
-## Approval Rule
-
-A phase is approved only after:
-
-1. Its output is tested or manually verified.
-2. It is checked against this requirements list.
-3. Required and optional work are clearly separated.
-4. Any architectural change is recorded and discussed before implementation.
+Optional items must not delay the remaining official submission and viva work.
