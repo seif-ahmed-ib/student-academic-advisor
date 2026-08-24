@@ -1,0 +1,11 @@
+{
+  "student_count": 649,
+  "cluster_count": 2,
+  "comparison_type": "post-hoc descriptive comparison",
+  "part_a_used_for_kmeans_training": false,
+  "clusters_treated_as_ground_truth": false,
+  "contribution_convention": "CV > 0; no configurable threshold",
+  "g3_usage": "post-hoc descriptive check only",
+  "g3_maximum_correlation": -0.5368620763058051,
+  "g3_union_correlation": -0.5360412339762285
+}

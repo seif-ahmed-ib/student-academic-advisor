@@ -1,0 +1,22 @@
+{
+  "selected_k": 2,
+  "selection_method": "highest silhouette score; smaller K breaks exact ties",
+  "selected_silhouette": 0.2716646868973109,
+  "selected_inertia": 2302.166628314355,
+  "random_state": 42,
+  "n_init": 20,
+  "training_features": [
+    "G1",
+    "G2",
+    "absences",
+    "studytime",
+    "failures"
+  ],
+  "post_hoc_only": "G3",
+  "data_audit": {
+    "original_rows": 649,
+    "cleaned_rows": 649,
+    "duplicate_rows_removed": 0,
+    "missing_rows_removed": 0
+  }
+}
