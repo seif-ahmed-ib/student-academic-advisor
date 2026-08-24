@@ -16,7 +16,7 @@ than forcing cluster labels into rules or Expert System results into training.
 - Part A / Part B integration analysis complete.
 - Inference Network Diagram and worked inference example complete.
 - Streamlit presentation interface complete.
-- **219 automated tests passing** at the audited project checkpoint..
+- **219 automated tests passing** at the audited project checkpoint.
 
 ## Main Results
 
@@ -145,3 +145,4 @@ Run the interface with:
 
 ```bat
 python -m streamlit run streamlit_app.py
+```
