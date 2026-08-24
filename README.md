@@ -15,7 +15,8 @@ than forcing cluster labels into rules or Expert System results into training.
 - Part B implementation and executable notebook complete.
 - Part A / Part B integration analysis complete.
 - Inference Network Diagram and worked inference example complete.
-- **219 automated tests passing** at the audited project checkpoint.
+- Streamlit presentation interface complete.
+- **219 automated tests passing** at the audited project checkpoint..
 
 ## Main Results
 
@@ -120,8 +121,27 @@ The project uses the
 Paulo Cortez and licensed under CC BY 4.0. The original data dictionary is retained
 with the raw files.
 
-## Optional Presentation Layer
+## Streamlit Presentation Layer
 
-A Streamlit interface may be added later as an optional presentation enhancement.
-It is not an official DSC 311 requirement and is not needed to run or verify the
-required project components.
+The project includes an optional Streamlit interface for presentation and
+demonstration purposes. It reuses the tested Part A, Part B, and integration
+implementations rather than duplicating their logic.
+
+The interface provides:
+
+- Project overview and workflow.
+- Interactive individual-student fuzzy Expert System inference.
+- Raw inputs and fuzzified facts.
+- Rule-by-rule FV, CF, and CV inference trace.
+- Final Conclusions, Maximum aggregation, and fuzzy Union.
+- Inference Network Diagram.
+- Part B data-preparation evidence.
+- K-Means K-selection results and visualizations.
+- Cluster profiles and interpretations.
+- Part A / Part B post-hoc integration results.
+- Project sources, methodological boundaries, and limitations.
+
+Run the interface with:
+
+```bat
+python -m streamlit run streamlit_app.py
